@@ -1,3 +1,5 @@
+"""航班查询工具：封装 SerpAPI 的 Google Flights 查询并做结果清洗。"""
+
 import os
 from typing import Optional
 import serpapi
@@ -33,6 +35,7 @@ def flights_finder(
     adults: int = 1
 ):
     """Find flights using the Google Flights engine."""
+    # 兼容中文城市输入：先尝试映射到 IATA 机场三字码。
     departure_code = CITY_TO_AIRPORT.get(departure_id, departure_id)
     arrival_code = CITY_TO_AIRPORT.get(arrival_id, arrival_id)
     
@@ -58,7 +61,7 @@ def flights_finder(
     results = search.data
     flights = results.get('best_flights', [])[:5]
     
-    # 提取链接
+    # 仅保留前 5 条，并提取上层提示词所需的关键字段（尤其是 booking_link）。
     enriched_flights = []
     for flight in flights:
         enriched = {
@@ -73,7 +76,8 @@ def flights_finder(
             "booking_link": flight.get('book_on_google_flights_link', '')  # 关键
         }
         enriched_flights.append(enriched)
-    return enriched_flights,results.get('best_flights', [])[:5]
+    # 兼容当前上层调用：返回（清洗结果, 原始前5条）二元组。
+    return enriched_flights, results.get('best_flights', [])[:5]
     # return results.get('best_flights', [])[:5]
 
 

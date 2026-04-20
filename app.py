@@ -1,3 +1,11 @@
+"""Streamlit 入口：负责用户交互、触发 Agent、以及可选邮件发送。
+
+整体流程：
+1) 用户输入旅行需求 -> 调用 LangGraph 工作流；
+2) 展示最终旅行建议；
+3) 用户确认后，复用同一个 thread_id 继续执行邮件节点。
+"""
+
 # pylint: disable = invalid-name
 import os
 import uuid
@@ -90,8 +98,10 @@ def populate_envs(sender_email, receiver_email, subject):
 
 
 def send_email(sender_email, receiver_email, subject, thread_id):
+    """从中断点恢复 graph 执行，进入邮件发送节点。"""
     try:
         populate_envs(sender_email, receiver_email, subject)
+        # 复用原 thread_id，LangGraph 会从 interrupt_before 的中断位置继续。
         config = {'configurable': {'thread_id': thread_id}, 'recursion_limit': 200}
         st.session_state.agent.graph.invoke(None, config=config)
         st.success('Email sent successfully!')
@@ -102,6 +112,7 @@ def send_email(sender_email, receiver_email, subject, thread_id):
 
 
 def initialize_agent():
+    """仅在首次访问时创建 Agent，后续请求复用实例。"""
     if 'agent' not in st.session_state:
         st.session_state.agent = Agent()
 
@@ -161,25 +172,17 @@ def render_ui():
 
 
 def process_query(user_input):
+    """触发一次完整的旅行问答流程，并缓存结果供邮件发送复用。"""
     if user_input:
         try:
-            # 限流和用量检查
-            if not rate_limit_check():
-                return
-            if get_today_usage() >= MAX_DAILY_CALLS:
-                st.error(f"今日免费查询次数已用完（{MAX_DAILY_CALLS}次/天），请明天再试。")
-                return
-
             thread_id = str(uuid.uuid4())
             st.session_state.thread_id = thread_id
 
             messages = [HumanMessage(content=user_input)]
             config = {'configurable': {'thread_id': thread_id}, 'recursion_limit': 200}
 
+            # 首次 invoke 会在 email_sender 前中断，返回给前端展示结果。
             result = st.session_state.agent.graph.invoke({'messages': messages}, config=config)
-
-            # 成功调用后增加计数
-            increment_usage()
 
             st.subheader('Travel Information')
             st.write(result['messages'][-1].content)
@@ -209,16 +212,13 @@ def render_email_form():
 
 
 def main():
+    """页面主入口：认证 -> 查询 -> （可选）邮件发送。"""
     # 先进行密码验证
     if not check_password():
         st.stop()
 
     initialize_agent()
     render_custom_css()
-
-    # 侧边栏显示剩余次数
-    remaining = MAX_DAILY_CALLS - get_today_usage()
-    st.sidebar.metric("今日剩余查询次数", remaining)
 
     user_input = render_ui()
 

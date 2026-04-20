@@ -5,6 +5,7 @@ version = "0.1.1"
 description = ""
 authors = ["Nir Bar"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -18,6 +19,7 @@ streamlit = "^1.38.0"
 serpapi = "^0.1.5"
 langchain-community = "0.2.16"
 dashscope = "^1.25.17"
+faiss-cpu = ">=1.7.4,<1.8.0"
 
 
 [build-system]

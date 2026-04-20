@@ -1,0 +1,206 @@
+FOODS_DATA = [
+    {
+        "id": "food_001",
+        "city": "北京",
+        "name": "北京烤鸭",
+        "category": "京菜",
+        "description": "北京烤鸭是具有世界声誉的北京著名菜式，以色泽红艳、肉质细嫩、味道醇厚、肥而不腻著称。",
+        "recommended_restaurants": [
+            {"name": "全聚德", "location": "东城区前门大街", "price_level": "$$$", "note": "最正宗但价格较高"},
+            {"name": "便宜坊", "location": "崇文门外大街", "price_level": "$$", "note": "焖炉烤鸭代表"},
+            {"name": "大董", "location": "东城区南锣鼓巷", "price_level": "$$$", "note": "创意烤鸭，环境好"}
+        ],
+        "tips": "吃烤鸭建议配薄饼、葱丝、甜面酱，再来一份鸭架汤。",
+        "tags": ["必吃", "招牌", "传统"]
+    },
+    {
+        "id": "food_002",
+        "city": "北京",
+        "name": "老北京涮羊肉",
+        "category": "京菜",
+        "description": "老北京涮羊肉采用铜锅炭火，以羊肉鲜嫩、蘸料独特著称，是冬日必选的美食。",
+        "recommended_restaurants": [
+            {"name": "东来顺", "location": "王府井大街", "price_level": "$$", "note": "百年老字号"},
+            {"name": "聚宝源", "location": "牛街", "price_level": "$$", "note": "羊肉品质极佳"},
+            {"name": "南门涮肉", "location": "天坛公园北门", "price_level": "$$", "note": "当地人常去"}
+        ],
+        "tips": "涮羊肉时间不宜过长，变色后即可食用，蘸麻酱小料味道最佳。",
+        "tags": ["必吃", "火锅", "冬季"]
+    },
+    {
+        "id": "food_003",
+        "city": "北京",
+        "name": "炸酱面",
+        "category": "京菜",
+        "description": "炸酱面是老北京传统面食，黄酱配肉丁浇在手工面配上八种菜码，香气四溢。",
+        "recommended_restaurants": [
+            {"name": "海碗居", "location": "东单", "price_level": "$", "note": "正宗老北京味道"},
+            {"name": "方砖厂69号炸酱面", "location": "南锣鼓巷", "price_level": "$", "note": "网红店，需排队"}
+        ],
+        "tips": "面要趁热拌匀，炸酱的香味和菜码的清爽完美结合。",
+        "tags": ["必吃", "面食", "实惠"]
+    },
+    {
+        "id": "food_004",
+        "city": "上海",
+        "name": "本帮红烧肉",
+        "category": "沪菜",
+        "description": "本帮红烧肉以上海苏帮菜为代表，选用五花肉慢火炖制，肥而不腻，入口即化。",
+        "recommended_restaurants": [
+            {"name": "绿波廊", "location": "豫园", "price_level": "$$$", "note": "老字号本帮菜"},
+            {"name": "上海老饭店", "location": "豫园路", "price_level": "$$", "note": "正宗本帮味道"},
+            {"name": "福1038", "location": "长宁区", "price_level": "$$$", "note": "环境优雅，本帮菜精致"}
+        ],
+        "tips": "红烧肉配米饭是经典搭配，一份足够2-3人分享。",
+        "tags": ["必吃", "招牌", "传统"]
+    },
+    {
+        "id": "food_005",
+        "city": "上海",
+        "name": "小笼包",
+        "category": "沪菜",
+        "description": "上海小笼包皮薄汁多味道鲜，以鲜肉小笼和蟹粉小笼最为著名。",
+        "recommended_restaurants": [
+            {"name": "南翔馒头店", "location": "豫园", "price_level": "$", "note": "百年老店，人气极旺"},
+            {"name": "佳记手工小笼", "location": "静安区", "price_level": "$", "note": "皮薄汤多"},
+            {"name": "鼎泰丰", "location": "多家分店", "price_level": "$$", "note": "品质稳定"}
+        ],
+        "tips": "吃小笼包要先咬一个小口吸汤汁，小心烫嘴。",
+        "tags": ["必吃", "小吃", "早点"]
+    },
+    {
+        "id": "food_006",
+        "city": "上海",
+        "name": "生煎包",
+        "category": "沪菜",
+        "description": "生煎包是上海特色小吃，底部煎得金黄香脆，咬开有汤汁，肉馅鲜嫩。",
+        "recommended_restaurants": [
+            {"name": "大壶春", "location": "黄浦区", "price_level": "$", "note": "老字号，浑水生煎"},
+            {"name": "丰裕生煎", "location": "多家分店", "price_level": "$", "note": "连锁店，方便"}
+        ],
+        "tips": "刚出锅的生煎最好吃，底部酥脆，咬开汤汁丰富。",
+        "tags": ["必吃", "小吃", "早餐"]
+    },
+    {
+        "id": "food_007",
+        "city": "杭州",
+        "name": "东坡肉",
+        "category": "浙菜",
+        "description": "东坡肉是杭州名菜，以猪肉为主料慢火炖制，色泽红亮，肥而不腻。",
+        "recommended_restaurants": [
+            {"name": "楼外楼", "location": "孤山路", "price_level": "$$", "note": "百年老店，正宗杭帮菜"},
+            {"name": "外婆家", "location": "多家分店", "price_level": "$", "note": "性价比高"},
+            {"name": "知味观", "location": "仁和路", "price_level": "$$", "note": "传统老字号"}
+        ],
+        "tips": "东坡肉一份通常是一人一块，配米饭正好。",
+        "tags": ["必吃", "招牌", "传统"]
+    },
+    {
+        "id": "food_008",
+        "city": "杭州",
+        "name": "西湖醋鱼",
+        "category": "浙菜",
+        "description": "西湖醋鱼是杭州名菜，选用西湖鲲鱼，烧法独特，酸甜适口。",
+        "recommended_restaurants": [
+            {"name": "楼外楼", "location": "孤山路", "price_level": "$$$", "note": "最正宗的西湖醋鱼"},
+            {"name": "杭州酒家", "location": "延安路", "price_level": "$$", "note": "当地人推荐"}
+        ],
+        "tips": "正宗西湖醋鱼选用草鱼而非鲈鱼，口感更佳。",
+        "tags": ["必吃", "招牌", "河鲜"]
+    },
+    {
+        "id": "food_009",
+        "city": "成都",
+        "name": "火锅",
+        "category": "川菜",
+        "description": "成都火锅以麻辣著称，牛油红汤锅底是特色，食材新鲜丰富。",
+        "recommended_restaurants": [
+            {"name": "蜀九香", "location": "武侯祠大街", "price_level": "$$", "note": "高端火锅代表"},
+            {"name": "大龙燚", "location": "多家分店", "price_level": "$$", "note": "明星常去"},
+            {"name": "小龙坎", "location": "春熙路", "price_level": "$$", "note": "网红店，需排队"}
+        ],
+        "tips": "成都火锅油碟只用麻酱和香油蒜泥，最能品出食材原味。",
+        "tags": ["必吃", "招牌", "聚餐"]
+    },
+    {
+        "id": "food_010",
+        "city": "成都",
+        "name": "担担面",
+        "category": "川菜",
+        "description": "担担面是成都传统面食，面条劲道，浇上特制肉臊和红油，香辣可口。",
+        "recommended_restaurants": [
+            {"name": "成都担担面", "location": "春熙路", "price_level": "$", "note": "老字号"},
+            {"name": "小名堂", "location": "宽窄巷子", "price_level": "$", "note": "可以品尝多种成都小吃"}
+        ],
+        "tips": "担担面趁热拌匀，让酱汁充分裹满面条。",
+        "tags": ["必吃", "小吃", "面食"]
+    },
+    {
+        "id": "food_011",
+        "city": "西安",
+        "name": "羊肉泡馍",
+        "category": "陕菜",
+        "description": "羊肉泡馍是西安传统小吃，掰碎的饼块泡入鲜美羊汤中，配以羊肉和粉丝。",
+        "recommended_restaurants": [
+            {"name": "老孙家", "location": "回民街", "price_level": "$$", "note": "最知名的泡馍老店"},
+            {"name": "同盛祥", "location": "钟楼", "price_level": "$$", "note": "百年老字号"},
+            {"name": "米家", "location": "回民街", "price_level": "$", "note": "当地人常去"}
+        ],
+        "tips": "泡馍需要自己掰成小碎块，越碎越入味。糖蒜和辣酱是标配。",
+        "tags": ["必吃", "招牌", "传统"]
+    },
+    {
+        "id": "food_012",
+        "city": "西安",
+        "name": "肉夹馍",
+        "category": "陕菜",
+        "description": "肉夹馍是西安标志性小吃，白吉饼夹入腊汁肉，饼酥肉香。",
+        "recommended_restaurants": [
+            {"name": "樊记腊汁肉", "location": "竹笆市", "price_level": "$", "note": "最正宗的肉夹馍"},
+            {"name": "老潼关", "location": "多家分店", "price_level": "$", "note": "酥脆掉渣"}
+        ],
+        "tips": "最好吃的是肥瘦相间的腊汁肉，肥而不腻，瘦而不柴。",
+        "tags": ["必吃", "小吃", "快餐"]
+    },
+    {
+        "id": "food_013",
+        "city": "重庆",
+        "name": "重庆火锅",
+        "category": "川菜",
+        "description": "重庆火锅以牛油红汤著称，九宫格是特色，麻辣鲜香。",
+        "recommended_restaurants": [
+            {"name": "珮姐老火锅", "location": "解放碑", "price_level": "$$", "note": "排队王，24小时营业"},
+            {"name": "周师兄大刀", "location": "洪崖洞", "price_level": "$$", "note": "精品火锅"},
+            {"name": "小天鹅", "location": "多家分店", "price_level": "$$", "note": "连锁品牌，品质稳定"}
+        ],
+        "tips": "重庆火锅油碟只放麻酱和蒜泥，可以解辣。注意食材涮煮时间。",
+        "tags": ["必吃", "招牌", "聚餐"]
+    },
+    {
+        "id": "food_014",
+        "city": "重庆",
+        "name": "小面",
+        "category": "川菜",
+        "description": "重庆小面是重庆特色面食，红油汤底配各种调料，香辣过瘾。",
+        "recommended_restaurants": [
+            {"name": "花市豌杂面", "location": "渝中区", "price_level": "$", "note": "当地人推荐"},
+            {"name": "重庆小面50强", "location": "多家分店", "price_level": "$", "note": "评选出来的名店"}
+        ],
+        "tips": "小面趁热吃，面条劲道有弹性。",
+        "tags": ["必吃", "小吃", "面食"]
+    },
+    {
+        "id": "food_015",
+        "city": "广州",
+        "name": "早茶",
+        "category": "粤菜",
+        "description": "广州早茶是一种民间传统饮食习俗，点心精致，茶香四溢。",
+        "recommended_restaurants": [
+            {"name": "陶陶居", "location": "上下九", "price_level": "$$", "note": "百年老字号"},
+            {"name": "点都德", "location": "多家分店", "price_level": "$$", "note": "连锁品牌，品质稳定"},
+            {"name": "广州酒家", "location": "多家分店", "price_level": "$$", "note": "老字号"}
+        ],
+        "tips": "早茶必备：虾饺、烧麦、叉烧包、蛋挞。边吃边喝茶是广州人的生活方式。",
+        "tags": ["必吃", "招牌", "传统"]
+    }
+]

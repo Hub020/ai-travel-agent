@@ -1,3 +1,4 @@
+"""酒店查询工具：封装 SerpAPI 的 Google Hotels 查询并输出简化结构。"""
 
 import os
 from typing import Optional, List, Dict, Any
@@ -37,6 +38,7 @@ def hotels_finder(
     search_params = {
         'api_key': os.environ.get('SERPAPI_API_KEY'),
         'engine': 'google_hotels',
+        # 酒店接口当前使用英文区域参数，结果稳定性更高。
         'hl': 'en',
         'gl': 'us',
         'q': q,
@@ -86,6 +88,7 @@ def hotels_finder(
             }
             cleaned_hotels.append(cleaned_hotel)
         
+        # 返回统一结构，便于上层 LLM 直接组织回复内容。
         return cleaned_hotels
         
     except Exception as e:
