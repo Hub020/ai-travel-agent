@@ -58,7 +58,7 @@ Once launched, simply enter your travel request. For example:
 我想从北京去上海，10月1日到10月7日，帮我找航班和酒店
 我5月要从北京去上海，希望在本月内找到机票酒店比较实惠的日期。帮我规划轻松休闲的行程，推荐不辣的正宗美食，并告知天气和穿衣建议。
 
-![photo1](https://github.com/user-attachments/assets/eb12d697-a445-4b13-b084-d2052f91d7bc)
+
 
 The chatbot will generate results that include logos and links for easy navigation.
 
@@ -71,9 +71,17 @@ The chatbot will generate results that include logos and links for easy navigati
 - <img width="1595" height="897" alt="image" src="https://github.com/user-attachments/assets/4c760791-6745-42ff-928d-61353aeac45d" />
 
 
-![photo2](https://github.com/user-attachments/assets/741e010c-22cf-4d31-a518-441b076ec58f)
+<img width="1578" height="850" alt="image" src="https://github.com/user-attachments/assets/19ec4133-8781-4ab0-8272-bd48c6878aad" />
+<img width="1600" height="855" alt="image" src="https://github.com/user-attachments/assets/60e620f3-03fe-4dff-824f-7066e4e9c60c" />
 
-![photo3](https://github.com/user-attachments/assets/a29173c7-852d-41ab-b3fe-94e6cca83c78)
+<img width="1195" height="551" alt="image" src="https://github.com/user-attachments/assets/c7ffce13-e90a-4e53-a4ef-98f68d5fd63d" />
+
+<img width="1145" height="433" alt="image" src="https://github.com/user-attachments/assets/c13ef5e9-8ae1-4dd9-9165-2f9336840edf" />
+
+
+<img width="824" height="764" alt="image" src="https://github.com/user-attachments/assets/2b1cbc66-fc0a-4748-a6f2-2c87e5547a0e" />
+<img width="956" height="723" alt="image" src="https://github.com/user-attachments/assets/973520ec-2204-4078-92b7-88806d3be2e4" />
+<img width="853" height="352" alt="image" src="https://github.com/user-attachments/assets/b0961d69-1afb-4297-9f35-3aeb771261e6" />
 
 
 #### Email Integration
