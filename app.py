@@ -115,22 +115,35 @@ def initialize_agent():
     """仅在首次访问时创建 Agent，后续请求复用实例。"""
     if 'agent' not in st.session_state:
         st.session_state.agent = Agent()
+    if 'enable_multi_round_decision' not in st.session_state:
+        st.session_state.enable_multi_round_decision = True
+    if 'decision_rounds' not in st.session_state:
+        st.session_state.decision_rounds = 2
+    if 'show_decision_trace_panel' not in st.session_state:
+        st.session_state.show_decision_trace_panel = True
+    if 'expand_decision_trace' not in st.session_state:
+        st.session_state.expand_decision_trace = False
+    if 'last_decision_trace' not in st.session_state:
+        st.session_state.last_decision_trace = []
 
 
 def render_custom_css():
     st.markdown(
         '''
         <style>
+        .stApp {
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 30%, #ffffff 100%);
+        }
         .main-title {
             font-size: 2.5em;
-            color: #333;
+            color: #1f2d3d;
             text-align: center;
             margin-bottom: 0.5em;
             font-weight: bold;
         }
         .sub-title {
             font-size: 1.2em;
-            color: #333;
+            color: #334155;
             text-align: left;
             margin-bottom: 0.5em;
         }
@@ -151,6 +164,26 @@ def render_custom_css():
             max-width: 600px;
             margin: 0 auto;
         }
+        .result-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+        .result-title {
+            font-size: 1.2em;
+            color: #0f172a;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .trace-tip {
+            color: #475569;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+        }
         </style>
         ''', unsafe_allow_html=True)
 
@@ -168,13 +201,77 @@ def render_ui():
     )
     st.markdown('</div>', unsafe_allow_html=True)
     st.sidebar.image('images/ai-travel.png', caption='AI Travel Assistant')
-    return user_input
+    st.sidebar.markdown("### 多轮决策设置")
+    enable_multi_round = st.sidebar.checkbox(
+        "启用 AutoGen 风格多轮决策",
+        value=st.session_state.enable_multi_round_decision,
+        help="开启后，系统会先进行 Planner/Critic 多轮协商，再决定工具调用策略。",
+    )
+    decision_rounds = st.sidebar.slider(
+        "决策轮数",
+        min_value=1,
+        max_value=5,
+        value=st.session_state.decision_rounds,
+        help="轮数越高，决策更稳健但响应更慢。",
+    )
+    st.sidebar.markdown("### 决策面板显示")
+    st.session_state.show_decision_trace_panel = st.sidebar.checkbox(
+        "显示决策者对话",
+        value=st.session_state.show_decision_trace_panel,
+        help="关闭后将隐藏 Planner/Critic 的对话详情。",
+    )
+    st.session_state.expand_decision_trace = st.sidebar.checkbox(
+        "默认展开对话详情",
+        value=st.session_state.expand_decision_trace,
+        help="关闭后以折叠面板展示，可随时点开查看。",
+        disabled=not st.session_state.show_decision_trace_panel,
+    )
+    st.session_state.enable_multi_round_decision = enable_multi_round
+    st.session_state.decision_rounds = decision_rounds
+    return user_input, enable_multi_round, decision_rounds
 
 
-def process_query(user_input):
+def render_travel_result():
+    if 'travel_info' not in st.session_state:
+        return
+    st.markdown('<div class="result-card">', unsafe_allow_html=True)
+    st.markdown('<div class="result-title">🧳 旅行方案结果</div>', unsafe_allow_html=True)
+    st.write(st.session_state.travel_info)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+def render_decision_trace():
+    if not st.session_state.show_decision_trace_panel:
+        return
+    traces = st.session_state.get('last_decision_trace', [])
+    if not traces:
+        st.info("当前没有可展示的决策对话。开启多轮决策并执行一次查询后可查看。")
+        return
+
+    with st.expander("🧠 决策者对话（Planner / Critic）", expanded=st.session_state.expand_decision_trace):
+        st.markdown('<div class="trace-tip">你可以在侧边栏随时隐藏该面板。</div>', unsafe_allow_html=True)
+        for trace in traces:
+            st.markdown(
+                f"### 第 {trace['round']} 轮 {'✅ 已通过' if trace['approved'] else '🛠️ 需修订'}"
+            )
+            planner_col, critic_col = st.columns(2)
+            with planner_col:
+                st.markdown("**Planner（决策者）**")
+                st.write(trace['planner'])
+            with critic_col:
+                st.markdown("**Critic（评审者）**")
+                st.write(trace['critic'])
+            st.divider()
+
+
+def process_query(user_input, enable_multi_round, decision_rounds):
     """触发一次完整的旅行问答流程，并缓存结果供邮件发送复用。"""
     if user_input:
         try:
+            st.session_state.agent.configure_multi_round_decision(
+                enabled=enable_multi_round,
+                max_rounds=decision_rounds,
+            )
             thread_id = str(uuid.uuid4())
             st.session_state.thread_id = thread_id
 
@@ -183,11 +280,8 @@ def process_query(user_input):
 
             # 首次 invoke 会在 email_sender 前中断，返回给前端展示结果。
             result = st.session_state.agent.graph.invoke({'messages': messages}, config=config)
-
-            st.subheader('Travel Information')
-            st.write(result['messages'][-1].content)
-
             st.session_state.travel_info = result['messages'][-1].content
+            st.session_state.last_decision_trace = st.session_state.agent.get_last_decision_trace()
 
         except Exception as e:
             st.error(f'Error: {e}')
@@ -220,12 +314,14 @@ def main():
     initialize_agent()
     render_custom_css()
 
-    user_input = render_ui()
+    user_input, enable_multi_round, decision_rounds = render_ui()
 
     if st.button('Get Travel Information'):
-        process_query(user_input)
+        process_query(user_input, enable_multi_round, decision_rounds)
 
     if 'travel_info' in st.session_state:
+        render_travel_result()
+        render_decision_trace()
         render_email_form()
 
 

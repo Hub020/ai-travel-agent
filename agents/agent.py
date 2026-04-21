@@ -89,6 +89,30 @@ TOOLS_SYSTEM_PROMPT = f"""你是一个智能旅行规划助手。用户会提出
 当前年份：{CURRENT_YEAR}
 """
 
+MULTI_ROUND_PLANNER_PROMPT = """你是“旅行规划决策者（Planner）”。
+你的目标是基于当前对话，产出一个可执行的“下一步决策方案”，用于指导工具调用和结果整合。
+
+要求：
+1. 明确优先级（先查什么、后查什么）。
+2. 明确需要调用的工具、每个工具的关键参数。
+3. 给出最终输出结构（航班/酒店/天气/景点/美食）。
+4. 用简体中文输出，简洁清晰。
+"""
+
+MULTI_ROUND_CRITIC_PROMPT = """你是“旅行规划评审者（Critic）”。
+你的任务是评审 Planner 提供的方案是否完整、可执行、符合用户需求。
+
+请严格按以下格式输出：
+DECISION: APPROVE 或 REVISE
+FEEDBACK: <具体改进意见；若通过可写“方案完整，可执行”>
+
+评审标准：
+- 是否覆盖用户关键需求（日期、预算倾向、偏好、节奏等）
+- 是否明确工具调用步骤和参数
+- 是否有明显逻辑遗漏或顺序问题
+- 是否可落地执行
+"""
+
 EMAILS_SYSTEM_PROMPT = """你的任务是将结构化的类Markdown文本转换为有效的HTML邮件正文。
 
 - 不要在你的回复中包含 ```html 前置声明。
@@ -121,12 +145,26 @@ class Agent:
     def __init__(self):
         # name -> tool 实例映射，便于按 tool_call 名称分发调用。
         self._tools = {t.name: t for t in TOOLS}
+        self._enable_multi_round_decision = False
+        self._max_decision_rounds = 2
+        self._last_decision_trace = []
         # 使用阿里通义千问（免费模型，需设置 DASHSCOPE_API_KEY）
         self._tools_llm = ChatTongyi(
             model="qwen-turbo",
             dashscope_api_key=os.getenv("DASHSCOPE_API_KEY"),
             temperature=0.7,
         ).bind_tools(TOOLS)
+        # 借鉴 AutoGen 的“Planner + Critic”双角色协商。
+        self._planner_llm = ChatTongyi(
+            model="qwen-turbo",
+            dashscope_api_key=os.getenv("DASHSCOPE_API_KEY"),
+            temperature=0.5,
+        )
+        self._critic_llm = ChatTongyi(
+            model="qwen-turbo",
+            dashscope_api_key=os.getenv("DASHSCOPE_API_KEY"),
+            temperature=0.2,
+        )
         # 状态图构建：call_tools_llm <-> invoke_tools 循环，直到无工具调用再进入 email_sender。
         builder = StateGraph(AgentState)
         builder.add_node('call_tools_llm', self.call_tools_llm)
@@ -147,6 +185,77 @@ class Agent:
         self.graph = builder.compile(checkpointer=memory, interrupt_before=['email_sender'])
 
         print(self.graph.get_graph().draw_mermaid())
+
+    def configure_multi_round_decision(self, enabled: bool, max_rounds: int = 2):
+        """运行时配置多轮决策功能。"""
+        self._enable_multi_round_decision = enabled
+        self._max_decision_rounds = max(1, min(max_rounds, 5))
+
+    def get_last_decision_trace(self) -> list[dict]:
+        """返回最近一次多轮决策对话记录。"""
+        return self._last_decision_trace
+
+    @staticmethod
+    def _is_plan_approved(critic_text: str) -> bool:
+        first_line = critic_text.strip().splitlines()[0].upper() if critic_text.strip() else ""
+        return "APPROVE" in first_line and "REVISE" not in first_line
+
+    def _run_multi_round_decision(self, messages: list[AnyMessage]) -> str:
+        """通过 Planner/Critic 多轮博弈，得到更稳健的执行策略。"""
+        self._last_decision_trace = []
+        if not self._enable_multi_round_decision:
+            return ""
+
+        latest_plan = ""
+        latest_feedback = ""
+        approved = False
+
+        for round_idx in range(self._max_decision_rounds):
+            planner_messages = [SystemMessage(content=MULTI_ROUND_PLANNER_PROMPT)] + messages
+            if latest_feedback:
+                planner_messages.append(
+                    HumanMessage(
+                        content=(
+                            "请根据以下评审意见修订你的决策方案，并给出更可执行的版本：\n"
+                            f"{latest_feedback}"
+                        )
+                    )
+                )
+            planner_reply = self._planner_llm.invoke(planner_messages)
+            latest_plan = planner_reply.content
+
+            critic_messages = [
+                SystemMessage(content=MULTI_ROUND_CRITIC_PROMPT),
+                HumanMessage(
+                    content=(
+                        f"这是第 {round_idx + 1} 轮评审。\n"
+                        "请评审以下 Planner 方案：\n\n"
+                        f"{latest_plan}"
+                    )
+                ),
+            ]
+            critic_reply = self._critic_llm.invoke(critic_messages)
+            latest_feedback = critic_reply.content
+            self._last_decision_trace.append(
+                {
+                    "round": round_idx + 1,
+                    "planner": latest_plan,
+                    "critic": latest_feedback,
+                    "approved": self._is_plan_approved(latest_feedback),
+                }
+            )
+            if self._is_plan_approved(latest_feedback):
+                approved = True
+                break
+
+        status = "已通过评审" if approved else "达到最大轮次，采用当前最优方案"
+        return (
+            "【多轮决策结论（AutoGen风格）】\n"
+            f"状态：{status}\n"
+            f"策略方案：\n{latest_plan}\n\n"
+            f"最后一轮评审意见：\n{latest_feedback}\n\n"
+            "请你严格依据上述策略决定是否调用工具，并产出最终旅行方案。"
+        )
 
     @staticmethod
     def exists_action(state: AgentState):
@@ -189,6 +298,9 @@ class Agent:
     def call_tools_llm(self, state: AgentState):
         """给工具型 LLM 注入系统提示词，让其规划并产出 tool_calls。"""
         messages = state['messages']
+        strategy_context = self._run_multi_round_decision(messages)
+        if strategy_context:
+            messages = messages + [HumanMessage(content=strategy_context)]
         messages = [SystemMessage(content=TOOLS_SYSTEM_PROMPT)] + messages
         message = self._tools_llm.invoke(messages)
         return {'messages': [message]}
