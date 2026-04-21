@@ -68,6 +68,8 @@ The chatbot will generate results that include logos and links for easy navigati
 #### Example Outputs
 
 - Flight and hotel options with relevant logos and links for easy reference:
+- <img width="1595" height="897" alt="image" src="https://github.com/user-attachments/assets/4c760791-6745-42ff-928d-61353aeac45d" />
+
 
 ![photo2](https://github.com/user-attachments/assets/741e010c-22cf-4d31-a518-441b076ec58f)
 
